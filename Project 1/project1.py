@@ -24,6 +24,8 @@ def plotDET(gen:np.array, imp:np.array, dist:bool):
     t = np.linspace(0, 966, 1000)
     FMRs = []
     FNMRs = []
+    EER = 0
+    AUC = 0
     for eta in t:
         if dist:
             FNMR, FMR = thresholdAnalyser(imp, gen, eta)
@@ -31,6 +33,9 @@ def plotDET(gen:np.array, imp:np.array, dist:bool):
             FMR, FNMR = thresholdAnalyser(gen, imp, eta)
         FMRs.append(FMR)
         FNMRs.append(FNMR)
+        if abs(FMR - FNMR) < 0.005:
+            EER = FMR
+    AUC = np.trapz(FNMRs, FMRs)
     # Setting axes
     fig = plt.figure()
     fig.subplots_adjust(top=0.8)
@@ -42,6 +47,7 @@ def plotDET(gen:np.array, imp:np.array, dist:bool):
     plt.plot(FMRs, FNMRs, 'r')
     # Show the plot
     plt.show()
+    return (EER, AUC)
 
 
 # Read Files
@@ -134,15 +140,17 @@ fFMR, fFNMR = thresholdAnalyser(fGen, fImp, eta)
 print("The FMR of the fingerprint matcher is " + str(fFMR) + " and the FNMR is " + str(fFNMR))
 # Hand FMR and FNMR
 hFNMR, hFMR = thresholdAnalyser(hImp, hGen, eta)
-print("The FMR of the hand matcher is " + str(hFMR) + " and the FNMR is " + str(hFNMR))
+print("The FMR of the hand matcher is " + str(hFMR) + " and the FNMR is " + str(hFNMR) + "\n")
 
 # (g)
 # Fingerprint DET Curve
-plotDET(fGen, fImp, False)
+(fEER, fAUC) = plotDET(fGen, fImp, False)
+print("The Equal Error Rate of the fingerprint matcher is " + str(fEER))
+print("The Are Under the Curve of the fingerprint matcher is " + str(fAUC))
 # Hand DET Curve
-plotDET(hGen, hImp, True)
-
-
+(hEER, hAUC) = plotDET(hGen, hImp, True)
+print("The Equal Error Rate of the hand matcher is " + str(hEER))
+print("The Are Under the Curve of the fingerprint matcher is " + str(hAUC))
 
 # Close Files
 fGenFile.close()
