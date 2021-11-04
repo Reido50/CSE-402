@@ -33,6 +33,23 @@ def DecodeOrientationField(m):
         return "whorl"
     return None
 
+def PlotRidgePattern(x, y, A, theta, f):
+    # Instantiate image
+    image = [[(0,0,0)]*x]*y
+
+    # Calculate pixel intensities
+    for i in range(len(image)):
+        for j in range(len(image[0])):
+            intensity =  (int)(A * math.cos(2*math.pi*f*(i*math.cos(theta)+j*math.sin(theta))))
+            image[i][j] = (intensity, intensity, intensity)
+
+    # Setting axes
+    fig = plt.figure()
+    # Plot the functions
+    plt.imshow(image)
+    # Show the plot
+    plt.show()
+
 # Orientation Field Calculations
 # 1
 field1 = [[10, 15, -10],
@@ -56,5 +73,19 @@ field4 = [[45, 2, -50],
 print("Field 4 is a " + DecodeOrientationField(field4))
 
 # Ridge Pattern Wave
-x = list(range(601))
-y = list(range(601))
+PlotRidgePattern(600, 600, 80, math.radians(0), 0.01)
+PlotRidgePattern(600, 600, 80, math.radians(45), 0.01)
+PlotRidgePattern(600, 600, 80, math.radians(90), 0.01)
+PlotRidgePattern(600, 600, 80, math.radians(135), 0.01)
+PlotRidgePattern(600, 600, 160, math.radians(0), 0.01)
+PlotRidgePattern(600, 600, 160, math.radians(45), 0.01)
+PlotRidgePattern(600, 600, 160, math.radians(90), 0.01)
+PlotRidgePattern(600, 600, 160, math.radians(135), 0.01)
+PlotRidgePattern(600, 600, 80, math.radians(0), 1)
+PlotRidgePattern(600, 600, 80, math.radians(45), 1)
+PlotRidgePattern(600, 600, 80, math.radians(90), 1)
+PlotRidgePattern(600, 600, 80, math.radians(135), 1)
+PlotRidgePattern(600, 600, 80, math.radians(0), 10)
+PlotRidgePattern(600, 600, 80, math.radians(45), 10)
+PlotRidgePattern(600, 600, 80, math.radians(90), 10)
+PlotRidgePattern(600, 600, 80, math.radians(135), 10)
