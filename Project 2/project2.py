@@ -5,6 +5,7 @@ from scipy import signal
 import math
 import os
 import sys
+import csv
 
 indexDict = {0:(1,2), 1:(0,2), 2:(0,1),
              3:(0,0), 4:(1,0), 5:(2,0),
@@ -103,19 +104,22 @@ PlotRidgePattern(600, 600, 80, math.radians(135), 10)
 # Calculate Orientation Field
 path = os.path.abspath(os.getcwd())
 img = Image.open(path + '\\Project 2\\proj02_q1_fingerprint_images\\user001_1.gif').convert('L')
-
-
+# Apply sobel filters
 sobel_x = np.array([[-1, -2, -1],
                     [0, 0, 0],
                     [1, 2, 1]])
 sobel_y = np.array([[-1, 0, 1],
                     [-2, 0, 2],
                     [-1, 0, 1]])
-G_x = signal.convolve2d(img, sobel_x)
-G_y = signal.convolve2d(img, sobel_y)
-orientationField = [[0]*img.size[1]]*img.size[0]
-for x in range(img.size[0]):
-    for y in range(img.size[1]):
+G_x = signal.convolve2d(img, sobel_x, 'valid')
+G_y = signal.convolve2d(img, sobel_y, 'valid')
+# Pad G_x and G_y with 0s on the border
+G_x = np.pad(G_x, pad_width=1, mode='constant', constant_values=0)
+G_y = np.pad(G_y, pad_width=1, mode='constant', constant_values=0)
+# Calculate orientation field
+orientationField = [[0]*len(G_x[0])]*len(G_x)
+for x in range(4, len(G_x)-4):
+    for y in range(4, len(G_x[0])-4):
         sum_numerator = 0
         sum_denomenator = 0
         for i in range(-4, 4):
@@ -123,3 +127,8 @@ for x in range(img.size[0]):
                 sum_numerator += 2 * G_x[x+i][y+i] * G_y[x+i][y+i]
                 sum_denomenator += (G_x[x+i][y+j]**2) - (G_y[x+i][y+j]**2)
         orientationField[x][y] = 0.5 * math.atan2(sum_numerator, sum_denomenator)
+# Write to CSV File
+np.savetxt("orientationField.csv", 
+           orientationField,
+           delimiter =", ", 
+           fmt ='% s')
