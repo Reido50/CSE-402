@@ -192,7 +192,10 @@ for filename in os.listdir(directory):
     f = open(directory + filename)
     temp = []
     for line in f.readlines():
-        temp.append(line.split)
+        point = []
+        for num in line.split():
+            point.append(float(num))
+        temp.append(point)
     minpoints.append(temp)
     filenames.append(filename)
 # Calculate all combinations and print
