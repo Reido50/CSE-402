@@ -100,7 +100,7 @@ def MinutiaeMatcher(M_1, M_2):
             # Compute transformation parameters
             tx = j[0] - i[0]
             ty = j[1] - i[1]
-            tr = j[2] - i[2]
+            tr = math.radians(j[2] - i[2])
             # Apply transformation to all points in M_1 and determine if point is in tolerance
             M_1_prime = copy.deepcopy(M_1)
             for k in M_1_prime:
@@ -169,6 +169,7 @@ PlotRidgePattern(600, 600, 80, math.radians(135), 10)
 
 # QUESTION 3
 # Calculate Orientation Field
+'''
 CalcOrientationField('user001_1.gif')
 CalcOrientationField('user002_1.gif')
 CalcOrientationField('user003_1.gif')
@@ -179,10 +180,25 @@ CalcOrientationField('user007_1.gif')
 CalcOrientationField('user008_1.gif')
 CalcOrientationField('user009_1.gif')
 CalcOrientationField('user010_1.gif')
+'''
 
 # QUESTION 4
+# Extract data
 path = os.path.abspath(os.getcwd())
-directory = path + '\\Project 2\\proj02_q2_minpoints'
+directory = path + '\\Project 2\\proj02_q2_minpoints\\'
+filenames = []
+minpoints = []
 for filename in os.listdir(directory):
-    f = os.path.join(directory, filename)
+    f = open(directory + filename)
+    temp = []
+    for line in f.readlines():
+        temp.append(line.split)
+    minpoints.append(temp)
+    filenames.append(filename)
+# Calculate all combinations and print
+for i in range(len(minpoints)):
+    for j in range(len(minpoints)):
+        match_data = MinutiaeMatcher(minpoints[i], minpoints[j])
+        print(filenames[i] + " " + filenames[j] + " " + match_data[0] + " " + match_data[1] + " " + match_data[2] + " " + match_data[3])
+
     
