@@ -2,10 +2,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 from scipy import signal
+import scipy
 import math
 import os
 import sys
 import csv
+import copy
+
+import scipy
 
 indexDict = {0:(1,2), 1:(0,2), 2:(0,1),
              3:(0,0), 4:(1,0), 5:(2,0),
@@ -56,6 +60,69 @@ def PlotRidgePattern(x, y, A, theta, f):
     # Show the plot
     plt.show()
 
+def CalcOrientationField(filename):
+    path = os.path.abspath(os.getcwd())
+    img = Image.open(path + '\\Project 2\\proj02_q1_fingerprint_images\\' + filename).convert('L')
+    img_mat = np.matrix(img)
+    # Apply sobel filters
+    sobel_x = np.array([[-1, -2, -1],
+                        [0, 0, 0],
+                        [1, 2, 1]])
+    sobel_y = np.array([[-1, 0, 1],
+                        [-2, 0, 2],
+                        [-1, 0, 1]])
+    G_x = signal.convolve2d(img_mat, sobel_x, 'valid')
+    G_y = signal.convolve2d(img_mat, sobel_y, 'valid')
+    # Pad G_x and G_y with 0s on the border
+    G_x = np.pad(G_x, pad_width=1, mode='constant', constant_values=0)
+    G_y = np.pad(G_y, pad_width=1, mode='constant', constant_values=0)
+    # Calculate orientation field
+    orientationField = [[0]*len(G_x[0])]*len(G_x)
+    for x in range(4, len(G_x)-4):
+        for y in range(4, len(G_x[0])-4):
+            sum_numerator = 0
+            sum_denomenator = 0
+            for i in range(-4, 4):
+                for j in range(-4, 4):
+                    sum_numerator += 2 * G_x[x+i][y+j] * G_y[x+i][y+j]
+                    sum_denomenator += (G_x[x+i][y+j]**2) - (G_y[x+i][y+j]**2)
+            orientationField[x][y] = (math.pi / 2) + 0.5 * math.atan2(sum_numerator, sum_denomenator)
+    # Write to CSV File
+    np.savetxt("orientationField" + filename + ".csv", 
+            orientationField,
+            delimiter =", ", 
+            fmt ='% s')
+
+def MinutiaeMatcher(M_1, M_2):
+    C = [[0,0,0,0] * len(M_2)] * len(M_1)
+    for i in M_1:
+        for j in M_2:
+            # Compute transformation parameters
+            tx = j[0] - i[0]
+            ty = j[1] - i[1]
+            tr = j[2] - i[2]
+            # Apply transformation to all points in M_1 and determine if point is in tolerance
+            M_1_prime = copy.deepcopy(M_1)
+            for k in M_1_prime:
+                k[0] = (k[0]-i[0])*math.cos(tr) + (k[1]-i[1])*math.sin(tr) + (i[0] + tx)
+                k[1] = -(k[0]-i[0])*math.sin(tr) + (k[1]-i[1])*math.cos(tr) + (i[1] + ty)
+                for J in M_2:
+                    if ((J[0] - k[0])**2 + (J[1] - k[1])**2) ** (1/2) < 10:
+                        C[i][j][0] = tx
+                        C[i][j][1] = ty
+                        C[i][j][2] = tr
+                        C[i][j][3] += 1
+    # Find the max C value
+    maxVal = -1
+    maxLoc = [0,0]
+    for x in range(len(C)):
+        for y in range(len(C[0])):
+            if C[x][y][3] > maxVal:
+                maxVal = C[x][y][3]
+                maxLoc = [x,y]
+    # Return transformation params and number of matching pairs
+    return C[maxLoc[0]][maxLoc[1]]
+
 # QUESTION 1
 # Orientation Field Calculations
 # 1
@@ -102,33 +169,20 @@ PlotRidgePattern(600, 600, 80, math.radians(135), 10)
 
 # QUESTION 3
 # Calculate Orientation Field
+CalcOrientationField('user001_1.gif')
+CalcOrientationField('user002_1.gif')
+CalcOrientationField('user003_1.gif')
+CalcOrientationField('user004_1.gif')
+CalcOrientationField('user005_1.gif')
+CalcOrientationField('user006_1.gif')
+CalcOrientationField('user007_1.gif')
+CalcOrientationField('user008_1.gif')
+CalcOrientationField('user009_1.gif')
+CalcOrientationField('user010_1.gif')
+
+# QUESTION 4
 path = os.path.abspath(os.getcwd())
-img = Image.open(path + '\\Project 2\\proj02_q1_fingerprint_images\\user001_1.gif').convert('L')
-# Apply sobel filters
-sobel_x = np.array([[-1, -2, -1],
-                    [0, 0, 0],
-                    [1, 2, 1]])
-sobel_y = np.array([[-1, 0, 1],
-                    [-2, 0, 2],
-                    [-1, 0, 1]])
-G_x = signal.convolve2d(img, sobel_x, 'valid')
-G_y = signal.convolve2d(img, sobel_y, 'valid')
-# Pad G_x and G_y with 0s on the border
-G_x = np.pad(G_x, pad_width=1, mode='constant', constant_values=0)
-G_y = np.pad(G_y, pad_width=1, mode='constant', constant_values=0)
-# Calculate orientation field
-orientationField = [[0]*len(G_x[0])]*len(G_x)
-for x in range(4, len(G_x)-4):
-    for y in range(4, len(G_x[0])-4):
-        sum_numerator = 0
-        sum_denomenator = 0
-        for i in range(-4, 4):
-            for j in range(-4, 4):
-                sum_numerator += 2 * G_x[x+i][y+i] * G_y[x+i][y+i]
-                sum_denomenator += (G_x[x+i][y+j]**2) - (G_y[x+i][y+j]**2)
-        orientationField[x][y] = 0.5 * math.atan2(sum_numerator, sum_denomenator)
-# Write to CSV File
-np.savetxt("orientationField.csv", 
-           orientationField,
-           delimiter =", ", 
-           fmt ='% s')
+directory = path + '\\Project 2\\proj02_q2_minpoints'
+for filename in os.listdir(directory):
+    f = os.path.join(directory, filename)
+    
