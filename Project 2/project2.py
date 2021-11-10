@@ -93,25 +93,25 @@ def CalcOrientationField(filename):
             delimiter =", ", 
             fmt ='% s')
 
-def MinutiaeMatcher(M_1, M_2):
-    C = [[0,0,0,0] * len(M_2)] * len(M_1)
-    for i in M_1:
-        for j in M_2:
+def MinutiaeMatcher(p, q):
+    C = [[[0,0,0,0]] * len(q)] * len(p)
+    for i in range(len(p)):
+        for j in range(len(q)):
             # Compute transformation parameters
-            tx = j[0] - i[0]
-            ty = j[1] - i[1]
-            tr = math.radians(j[2] - i[2])
+            tx = q[j][0] - p[i][0]
+            ty = q[j][1] - p[i][1]
+            tr = math.radians(q[j][2] - p[i][2])
             # Apply transformation to all points in M_1 and determine if point is in tolerance
-            M_1_prime = copy.deepcopy(M_1)
-            for k in M_1_prime:
-                k[0] = (k[0]-i[0])*math.cos(tr) + (k[1]-i[1])*math.sin(tr) + (i[0] + tx)
-                k[1] = -(k[0]-i[0])*math.sin(tr) + (k[1]-i[1])*math.cos(tr) + (i[1] + ty)
-                for J in M_2:
-                    if ((J[0] - k[0])**2 + (J[1] - k[1])**2) ** (1/2) < 10:
+            p_p = copy.deepcopy(p)
+            for k in range(len(p_p)):
+                p_p[k][0] = (p[k][0]-p[i][0])*math.cos(tr) + (p[k][1]-p[i][1])*math.sin(tr) + (p[i][0] + tx)
+                p_p[k][1] = -(p[k][0]-p[i][0])*math.sin(tr) + (p[k][1]-p[i][1])*math.cos(tr) + (p[i][1] + ty)
+                for l in range(len(q)):
+                    if ((q[l][0] - p_p[k][0])**2.0 + (q[l][1] - p_p[k][1])**2.0) ** (1.0/2.0) < 10.0:
                         C[i][j][0] = tx
                         C[i][j][1] = ty
                         C[i][j][2] = tr
-                        C[i][j][3] += 1
+                        C[i][j][3] += 1.0
     # Find the max C value
     maxVal = -1
     maxLoc = [0,0]
@@ -148,7 +148,6 @@ print("Field 4 is a " + DecodeOrientationField(field4))
 
 # QUESTION 2
 # Ridge Pattern Wave
-'''
 PlotRidgePattern(600, 600, 80, math.radians(0), 0.01)
 PlotRidgePattern(600, 600, 80, math.radians(45), 0.01)
 PlotRidgePattern(600, 600, 80, math.radians(90), 0.01)
@@ -165,11 +164,9 @@ PlotRidgePattern(600, 600, 80, math.radians(0), 10)
 PlotRidgePattern(600, 600, 80, math.radians(45), 10)
 PlotRidgePattern(600, 600, 80, math.radians(90), 10)
 PlotRidgePattern(600, 600, 80, math.radians(135), 10)
-'''
 
 # QUESTION 3
 # Calculate Orientation Field
-'''
 CalcOrientationField('user001_1.gif')
 CalcOrientationField('user002_1.gif')
 CalcOrientationField('user003_1.gif')
@@ -180,7 +177,6 @@ CalcOrientationField('user007_1.gif')
 CalcOrientationField('user008_1.gif')
 CalcOrientationField('user009_1.gif')
 CalcOrientationField('user010_1.gif')
-'''
 
 # QUESTION 4
 # Extract data
@@ -202,6 +198,7 @@ for filename in os.listdir(directory):
 for i in range(len(minpoints)):
     for j in range(len(minpoints)):
         match_data = MinutiaeMatcher(minpoints[i], minpoints[j])
-        print(filenames[i] + " " + filenames[j] + " " + match_data[0] + " " + match_data[1] + " " + match_data[2] + " " + match_data[3])
+        print(filenames[i] + " " + filenames[j] + " " + 
+            str(match_data[0]) + " " + str(match_data[1]) + " " + str(match_data[2]) + " " + str(match_data[3]))
 
     
