@@ -67,10 +67,10 @@ def CalcOrientationField(filename):
     # Apply sobel filters
     sobel_x = np.array([[-1, -2, -1],
                         [0, 0, 0],
-                        [1, 2, 1]])
+                        [1, 2, 1]]).T
     sobel_y = np.array([[-1, 0, 1],
                         [-2, 0, 2],
-                        [-1, 0, 1]])
+                        [-1, 0, 1]]).T
     G_x = signal.convolve2d(img_mat, sobel_x, 'valid')
     G_y = signal.convolve2d(img_mat, sobel_y, 'valid')
     # Pad G_x and G_y with 0s on the border
@@ -88,13 +88,14 @@ def CalcOrientationField(filename):
                     sum_denomenator += (G_x[x+i][y+j]**2) - (G_y[x+i][y+j]**2)
             orientationField[x][y] = (math.pi / 2) + 0.5 * math.atan2(sum_numerator, sum_denomenator)
     # Write to CSV File
-    np.savetxt("orientationField" + filename + ".csv", 
+    np.savetxt("orientationField" + filename + ".csv",
             orientationField,
-            delimiter =", ", 
+            delimiter =", ",
             fmt ='% s')
 
 def MinutiaeMatcher(p, q):
-    C = [[[0,0,0,0]] * len(q)] * len(p)
+    C = np.zeros((len(p), len(q), 4))
+    
     for i in range(len(p)):
         for j in range(len(q)):
             # Compute transformation parameters
@@ -103,15 +104,19 @@ def MinutiaeMatcher(p, q):
             tr = math.radians(q[j][2] - p[i][2])
             # Apply transformation to all points in M_1 and determine if point is in tolerance
             p_p = copy.deepcopy(p)
-            for k in range(len(p_p)):
+            for k in range(len(p)):
                 p_p[k][0] = (p[k][0]-p[i][0])*math.cos(tr) + (p[k][1]-p[i][1])*math.sin(tr) + (p[i][0] + tx)
                 p_p[k][1] = -(p[k][0]-p[i][0])*math.sin(tr) + (p[k][1]-p[i][1])*math.cos(tr) + (p[i][1] + ty)
+                min_dist = 10.0
                 for l in range(len(q)):
-                    if ((q[l][0] - p_p[k][0])**2.0 + (q[l][1] - p_p[k][1])**2.0) ** (1.0/2.0) < 10.0:
+                    dist = abs(math.dist((p_p[k][0], p_p[k][1]), (q[l][0], q[l][1])))
+                    if dist < min_dist:
+                        min_dist = dist
                         C[i][j][0] = tx
                         C[i][j][1] = ty
                         C[i][j][2] = tr
-                        C[i][j][3] += 1.0
+                if min_dist != 10.0:
+                    C[i][j][3] += 1
     # Find the max C value
     maxVal = -1
     maxLoc = [0,0]
@@ -146,6 +151,7 @@ field4 = [[45, 2, -50],
           [-50, 2, 50]]
 print("Field 4 is a " + DecodeOrientationField(field4))
 
+'''
 # QUESTION 2
 # Ridge Pattern Wave
 PlotRidgePattern(600, 600, 80, math.radians(0), 0.01)
@@ -177,6 +183,7 @@ CalcOrientationField('user007_1.gif')
 CalcOrientationField('user008_1.gif')
 CalcOrientationField('user009_1.gif')
 CalcOrientationField('user010_1.gif')
+'''
 
 # QUESTION 4
 # Extract data
@@ -198,7 +205,6 @@ for filename in os.listdir(directory):
 for i in range(len(minpoints)):
     for j in range(len(minpoints)):
         match_data = MinutiaeMatcher(minpoints[i], minpoints[j])
-        print(filenames[i] + " " + filenames[j] + " " + 
-            str(match_data[0]) + " " + str(match_data[1]) + " " + str(match_data[2]) + " " + str(match_data[3]))
-
-    
+        print("%s %1s %4d %4d %10.6f %4d" % 
+            (filenames[i], filenames[j], match_data[0], 
+            match_data[1], match_data[2], match_data[3]))   
