@@ -54,7 +54,7 @@ def PlotRidgePattern(x, y, A, theta, f):
     # Setting axes
     fig = plt.figure()
     # Plot the functions
-    plt.imshow(image)
+    plt.imshow(image, cmap='grey')
     # Title
     plt.title("Ridge Pattern (x=" + str(x) + ", y=" + str(y) + ", A=" + str(A) + ", theta=" + str(math.degrees(theta)) + ", f=" + str(f) + ")")
     # Show the plot
