@@ -54,7 +54,7 @@ def PlotRidgePattern(x, y, A, theta, f):
     # Setting axes
     fig = plt.figure()
     # Plot the functions
-    plt.imshow(image, cmap='grey')
+    plt.imshow(image, cmap='gray')
     # Title
     plt.title("Ridge Pattern (x=" + str(x) + ", y=" + str(y) + ", A=" + str(A) + ", theta=" + str(math.degrees(theta)) + ", f=" + str(f) + ")")
     # Show the plot
@@ -67,31 +67,30 @@ def CalcOrientationField(filename):
     # Apply sobel filters
     sobel_x = np.array([[-1, -2, -1],
                         [0, 0, 0],
-                        [1, 2, 1]]).T
+                        [1, 2, 1]])
     sobel_y = np.array([[-1, 0, 1],
                         [-2, 0, 2],
-                        [-1, 0, 1]]).T
+                        [-1, 0, 1]])
     G_x = signal.convolve2d(img_mat, sobel_x, 'valid')
     G_y = signal.convolve2d(img_mat, sobel_y, 'valid')
     # Pad G_x and G_y with 0s on the border
     G_x = np.pad(G_x, pad_width=1, mode='constant', constant_values=0)
     G_y = np.pad(G_y, pad_width=1, mode='constant', constant_values=0)
     # Calculate orientation field
-    orientationField = [[0]*len(G_x[0])]*len(G_x)
+    orientationField = np.zeros((len(G_x), len(G_x[0])))
     for x in range(4, len(G_x)-4):
         for y in range(4, len(G_x[0])-4):
             sum_numerator = 0
             sum_denomenator = 0
             for i in range(-4, 4):
                 for j in range(-4, 4):
-                    sum_numerator += 2 * G_x[x+i][y+j] * G_y[x+i][y+j]
-                    sum_denomenator += (G_x[x+i][y+j]**2) - (G_y[x+i][y+j]**2)
-            orientationField[x][y] = (math.pi / 2) + 0.5 * math.atan2(sum_numerator, sum_denomenator)
+                    sum_numerator += 2.0 * G_x[x+i][y+j] * G_y[x+i][y+j]
+                    sum_denomenator += (G_x[x+i][y+j]**2.0) - (G_y[x+i][y+j]**2.0)
+            orientationField[x][y] = (math.pi/2.0) + 0.5 * math.atan2(sum_numerator, sum_denomenator)
     # Write to CSV File
     np.savetxt("orientationField" + filename + ".csv",
             orientationField,
-            delimiter =", ",
-            fmt ='% s')
+            delimiter =", ")
 
 def MinutiaeMatcher(p, q):
     C = np.zeros((len(p), len(q), 4))
@@ -170,6 +169,7 @@ PlotRidgePattern(600, 600, 80, math.radians(0), 10)
 PlotRidgePattern(600, 600, 80, math.radians(45), 10)
 PlotRidgePattern(600, 600, 80, math.radians(90), 10)
 PlotRidgePattern(600, 600, 80, math.radians(135), 10)
+'''
 
 # QUESTION 3
 # Calculate Orientation Field
@@ -183,8 +183,9 @@ CalcOrientationField('user007_1.gif')
 CalcOrientationField('user008_1.gif')
 CalcOrientationField('user009_1.gif')
 CalcOrientationField('user010_1.gif')
-'''
 
+
+'''
 # QUESTION 4
 # Extract data
 path = os.path.abspath(os.getcwd())
@@ -207,4 +208,5 @@ for i in range(len(minpoints)):
         match_data = MinutiaeMatcher(minpoints[i], minpoints[j])
         print("%s %1s %4d %4d %10.6f %4d" % 
             (filenames[i], filenames[j], match_data[0], 
-            match_data[1], match_data[2], match_data[3]))   
+            match_data[1], match_data[2], match_data[3]))
+'''
