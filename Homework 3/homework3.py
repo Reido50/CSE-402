@@ -13,10 +13,21 @@ print("The mean vector of the dataset: " + str(mean))
 
 # Calculate covarience
 data = points - mean
-covariance = np.matmul(data, data.T)
+covariance = np.matmul(data.T, data)
 print("The covariance matrix of the dataset: " + str(covariance))
 
 # Calculate eigenvalues/eigenvectors
 eigvals, eigvecs = np.linalg.eig(covariance)
 print("The eigenvalues of the covariance matrix are: " + str(eigvals))
 print("The eigenvectors of the covariance matrix are: " + str(eigvecs))
+
+# Plot the data points and eigenvectors
+fig, ax = plt.subplots()
+x = np.array(points[:,0])
+y = np.array(points[:,1])
+plt.plot(x, y, 'o')
+print(eigvals[0][0])
+print(eigvals[0][1])
+ax.quiver(mean[0], mean[1], eigvecs[0][0], eigvecs[0][1])
+plt.show()
+

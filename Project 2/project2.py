@@ -184,8 +184,6 @@ CalcOrientationField('user008_1.gif')
 CalcOrientationField('user009_1.gif')
 CalcOrientationField('user010_1.gif')
 
-
-'''
 # QUESTION 4
 # Extract data
 path = os.path.abspath(os.getcwd())
@@ -209,4 +207,3 @@ for i in range(len(minpoints)):
         print("%s %1s %4d %4d %10.6f %4d" % 
             (filenames[i], filenames[j], match_data[0], 
             match_data[1], match_data[2], match_data[3]))
-'''
