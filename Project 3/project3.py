@@ -37,30 +37,60 @@ def ComputeLBP(img_mat):
                 else:
                     bin_str += str(1)
             bin_str = bin_str[::-1]
-            print(str(x) + ", " + str(y) + " " + str(bin_str))
+            int_rep = int(bin_str, 2)
+            LBP_img[x-1][y-1] = int_rep
+    return LBP_img
+
+def CompareImgMat(im1, im2):
+    sum_diff = 0
+    for x in range(len(im1)):
+        for y in range(len(im1[0])):
+            sum_diff += abs(im1[x][y] - im2[x][y])
+    return sum_diff / (len(im1) * len(im1[0]))
 
 # Question 1
 # (a)
 filename = 'face_grey.jpg'
 path = os.path.abspath(os.getcwd())
 img = Image.open(path + '\\Project 3\\' + filename)
-img_mat = np.array(img)
-brightened = ShowBrightenImage(img, 1.5)
-contrasted = ShowContrastedImage(img, 1.5)
-guassian = ShowGuassianImage(img, 1.5)
+Fo = np.matrix(img.convert('L'))
+Fb = ShowBrightenImage(img, 1.5)
+Fc = ShowContrastedImage(img, 1.5)
+Fg = ShowGuassianImage(img, 1.5)
 '''
-brightened.show()
-contrasted.show()
-guassian.show()
-brightened.save(path + '\\Project 3\\bright.jpg')
-contrasted.save(path + '\\Project 3\\contrasted.jpg')
-guassian.save(path + '\\Project 3\\guassian.jpg')
+Fb.show()
+Fc.show()
+Fg.show()
+Fb.save(path + '\\Project 3\\bright.jpg')
+Fc.save(path + '\\Project 3\\contrasted.jpg')
+Fg.save(path + '\\Project 3\\guassian.jpg')
 '''
 
 # (b)
-test_mat = np.matrix([[5, 3, 2], [6, 3, 2], [4, 4, 1]])
-print(test_mat)
-ComputeLBP(test_mat)
+Lo = ComputeLBP(np.array(img.convert('L')))
+Lb = ComputeLBP(np.array(Fb.convert('L')))
+Lc = ComputeLBP(np.array(Fc.convert('L')))
+Lg = ComputeLBP(np.array(Fg.convert('L')))
+'''
+plt.imshow(grey_arr, 'gray')
+plt.show()
+plt.imshow(gray_LBP_arr, cmap='gray')
+plt.show()
+plt.imshow(bright_LBP_arr, cmap='gray')
+plt.show()
+plt.imshow(contrast_LBP_arr, cmap='gray')
+plt.show()
+plt.imshow(gaussian_LBP_arr, cmap='gray')
+plt.show()
+'''
+# (c)
+print("Lo vs Lb:" + str(CompareImgMat(Lo, Lb)))
+print("Lo vs Lc:" + str(CompareImgMat(Lo, Lc)))
+print("Lo vs Lg:" + str(CompareImgMat(Lo, Lg)))
+# (d)
+print("Fo vs Fb:" + str(CompareImgMat(np.array(Fo), np.array(Fb))))
+print("Fo vs Fc:" + str(CompareImgMat(np.array(Fo), np.array(Fc))))
+print("Fo vs Fg:" + str(CompareImgMat(np.array(Fo), np.array(Fg))))
 
 # Question 2
 faces = np.zeros((50, 30, 30))
