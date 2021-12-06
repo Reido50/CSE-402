@@ -52,9 +52,28 @@ guassian = ShowGuassianImage(img, 1.5)
 brightened.show()
 contrasted.show()
 guassian.show()
+brightened.save(path + '\\Project 3\\bright.jpg')
+contrasted.save(path + '\\Project 3\\contrasted.jpg')
+guassian.save(path + '\\Project 3\\guassian.jpg')
 '''
 
 # (b)
 test_mat = np.matrix([[5, 3, 2], [6, 3, 2], [4, 4, 1]])
 print(test_mat)
 ComputeLBP(test_mat)
+
+# Question 2
+faces = np.zeros((50, 30, 30))
+directory = path + '\\Project 3\\proj03_face_images\\'
+i = 0
+for filename in os.listdir(directory):
+    cur_img = Image.open(directory + filename).convert('L')
+    faces[i] += np.array(cur_img)
+    i += 1
+# (a)
+first30 = np.zeros((30, 30, 30))
+i = 0
+for sub in range(10):
+    for f in range(3):
+        first30[i] += faces[sub*5 + f]
+        i += 1
