@@ -93,17 +93,23 @@ print("Fo vs Fc:" + str(CompareImgMat(np.array(Fo), np.array(Fc))))
 print("Fo vs Fg:" + str(CompareImgMat(np.array(Fo), np.array(Fg))))
 
 # Question 2
-faces = np.zeros((50, 30, 30))
+faces = np.zeros((50, 900))
 directory = path + '\\Project 3\\proj03_face_images\\'
 i = 0
 for filename in os.listdir(directory):
     cur_img = Image.open(directory + filename).convert('L')
-    faces[i] += np.array(cur_img)
+    faces[i] += np.array(cur_img).flatten()
     i += 1
 # (a)
-first30 = np.zeros((30, 30, 30))
+first30 = np.zeros((30, 900))
 i = 0
 for sub in range(10):
     for f in range(3):
         first30[i] += faces[sub*5 + f]
         i += 1
+mean = np.mean(faces, axis=0)
+data = np.zeros((50, 900))
+for row in range(len(faces)):
+    data[row] = faces[row] - mean
+cov = np.matmul(data, data.T)
+eigenvalues, eigenvectors = np.linalg.eig(cov)
