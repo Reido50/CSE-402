@@ -8,6 +8,7 @@ import os
 import sys
 import csv
 import copy
+import warnings
 
 def ShowBrightenImage(img, value):
     return ImageEnhance.Brightness(img).enhance(value)
@@ -48,6 +49,70 @@ def CompareImgMat(im1, im2):
             sum_diff += abs(im1[x][y] - im2[x][y])
     return sum_diff / (len(im1) * len(im1[0]))
 
+def PCA_Study(faces, selfies):
+    # Get first 3 images per subject
+    first30 = np.zeros((30, 900))
+    i = 0
+    for sub in range(10):
+        for f in range(3):
+            first30[i] += faces[sub*5 + f]
+            i += 1
+    # Calculate mean and data
+    mean = np.mean(first30, axis=0)
+    data = np.zeros((30, 900))
+    for row in range(len(first30)):
+        data[row] = first30[row] - mean
+    data = data.T
+    # Calculate eigenvals/vecs (sorted)
+    cov = np.matmul(data, data.T)
+    eigenvalues, eigenvectors = np.linalg.eig(cov)
+    index = eigenvalues.argsort()[::-1]
+    eigenvalues = eigenvalues[index]
+    eigenvectors = eigenvectors[index]
+    # Display mean face and top 50 eigenvalues
+    mean_img = np.reshape(mean, (30, 30))
+    plt.imshow(mean_img, cmap='gray')
+    plt.show()
+    print(eigenvalues[:50])
+    # Calculate eigen-coefficients for each face
+    warnings.simplefilter("ignore", np.ComplexWarning)
+    eigencoef = np.zeros((50, 40))
+    for row in range(len(faces)):
+        eigencoef[row] = np.matmul(eigenvectors[:,:40].T, faces[row])
+    # Calculate genuine and imposter scores
+    geniune = []
+    imposter = []
+    for sub1 in range(10):
+        for f1 in range(5):
+            for sub2 in range(10):
+                for f2 in range(5):
+                    score = np.linalg.norm(eigencoef[sub1*5+f1] - eigencoef[sub2*5+f2])
+                    if sub1 == sub2:
+                        geniune.append(score)
+                    else:
+                        imposter.append(score)
+    # Plot histogram of scores
+    plt.hist(geniune, 20, facecolor='blue', alpha=0.25)
+    plt.hist(imposter, 20, facecolor='red', alpha=0.25)
+    plt.show()
+    # Write to a CSV file
+    np.savetxt("genuine.csv", geniune, delimiter =", ")
+    np.savetxt("imposter.csv", imposter, delimiter =", ")
+    # Compute eigen-coefficients with selfies
+    eigencoef_selfies = np.zeros((10, 25))
+    for row in range(len(selfies)):
+        eigencoef_selfies[row] = np.matmul(eigenvectors[:,:25].T, selfies[row])
+    # Compute genuine scores
+    geniune_selfies = []
+    for im1 in range(len(selfies)):
+        for im2 in range(len(selfies)):
+            geniune_selfies.append(np.linalg.norm(eigencoef_selfies[im1] - eigencoef_selfies[im2]))
+    # Plot histogram of scores
+    plt.hist(geniune, 20, facecolor='blue', alpha=0.25)
+    plt.hist(imposter, 20, facecolor='red', alpha=0.25)
+    plt.hist(geniune_selfies, 20, facecolor = 'green', alpha=0.5)
+    plt.show()
+
 # Question 1
 # (a)
 filename = 'face_grey.jpg'
@@ -57,21 +122,18 @@ Fo = np.matrix(img.convert('L'))
 Fb = ShowBrightenImage(img, 1.5)
 Fc = ShowContrastedImage(img, 1.5)
 Fg = ShowGuassianImage(img, 1.5)
-'''
 Fb.show()
 Fc.show()
 Fg.show()
 Fb.save(path + '\\Project 3\\bright.jpg')
 Fc.save(path + '\\Project 3\\contrasted.jpg')
 Fg.save(path + '\\Project 3\\guassian.jpg')
-'''
 
 # (b)
 Lo = ComputeLBP(np.array(img.convert('L')))
 Lb = ComputeLBP(np.array(Fb.convert('L')))
 Lc = ComputeLBP(np.array(Fc.convert('L')))
 Lg = ComputeLBP(np.array(Fg.convert('L')))
-'''
 plt.imshow(grey_arr, 'gray')
 plt.show()
 plt.imshow(gray_LBP_arr, cmap='gray')
@@ -82,7 +144,6 @@ plt.imshow(contrast_LBP_arr, cmap='gray')
 plt.show()
 plt.imshow(gaussian_LBP_arr, cmap='gray')
 plt.show()
-'''
 # (c)
 print("Lo vs Lb:" + str(CompareImgMat(Lo, Lb)))
 print("Lo vs Lc:" + str(CompareImgMat(Lo, Lc)))
@@ -100,16 +161,15 @@ for filename in os.listdir(directory):
     cur_img = Image.open(directory + filename).convert('L')
     faces[i] += np.array(cur_img).flatten()
     i += 1
-# (a)
-first30 = np.zeros((30, 900))
+
+# Question 3
+selfies = np.zeros((10, 900))
+directory = path + '\\Project 3\\Selfies\\'
 i = 0
-for sub in range(10):
-    for f in range(3):
-        first30[i] += faces[sub*5 + f]
-        i += 1
-mean = np.mean(faces, axis=0)
-data = np.zeros((50, 900))
-for row in range(len(faces)):
-    data[row] = faces[row] - mean
-cov = np.matmul(data, data.T)
-eigenvalues, eigenvectors = np.linalg.eig(cov)
+for filename in os.listdir(directory):
+    cur_img = Image.open(directory + filename).convert('L')
+    selfies[i] += np.array(cur_img).flatten()
+    cur_img.save(path + '\\Project 3\\GreySelfies\\selfie_grey' + str(i+1) + '.jpg')
+    i += 1
+
+PCA_Study(faces, selfies)
